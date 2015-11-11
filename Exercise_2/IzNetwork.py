@@ -123,3 +123,33 @@ class IzLayer:
     self.delay  = {}
     self.factor = {}
 
+class GenericLayer:
+  """
+  Layer of Izhikevich neurons to be used inside an IzNetwork.
+  """
+
+  def __init__(self, n, a, b, c, d):
+    """
+    Initialise layer with the given parameters for each neuron.
+
+    Inputs:
+    n -- Number of neurons in the layer
+    """
+
+    self.N = n
+    self.a = np.repeat(np.array([a]), n)
+    self.b = np.repeat(np.array([b]), n)
+    self.c = np.repeat(np.array([c]), n)
+    self.d = np.repeat(np.array([d]), n)
+
+    self.S      = {}
+    self.delay  = {}
+    self.factor = {}
+
+class ExcitatoryLayer(GenericLayer):
+  def __init__(self, n):
+    GenericLayer.__init__(self, n, 0.02, 0.2, -65, 8)
+
+class InhibitoryLayer(GenericLayer):
+  def __init__(self, n):
+    GenericLayer.__init__(self, n, 0.02, 0.25, -65, 2)
