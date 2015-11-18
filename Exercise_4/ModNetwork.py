@@ -13,9 +13,9 @@ INHIB_INPUTS = 4
 
 CONNECTIONS_PER_MODULE = 1000
 
-T  = 500  # Simulation time
+T  = 1000  # Simulation time
 Ib = 5    # Base current
-DMAX = 3
+DMAX = 10
  
 class ModNetwork:
 
@@ -154,7 +154,7 @@ for t in xrange(T):
    print(t)
  
    for i in range(1, EXCIT_MODULES + 1):
-     mn.net.layer[i].I = rn.poisson(0.01, 100) * 15 
+     mn.net.layer[i].I = rn.poisson(0.01, 100) * 15
    
    mn.net.Update(t)
 
@@ -173,8 +173,8 @@ for fromLayer in range(9):
 all_firings_x = []
 all_firings_y = []
 
-for layer in range(9):
-  idx = 100 * (layer + 1) if layer > 0 else 0
+for layer in range(1, 9):
+  idx = 100 * layer
   
   for i in range(len(mn.net.layer[layer].firings)):
     firing = mn.net.layer[layer].firings[i]
