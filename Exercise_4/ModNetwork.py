@@ -47,11 +47,14 @@ class ModNetwork:
     for i in range(len(neurons_per_layer)):
       net.layer[i].S[0] = np.ones([INHIB_NEURONS if i == 0 else EXCIT_NEURONS_PER_MODULE, INHIB_NEURONS]) 
 
+    # Initialise all excit -> inhib connections to 0
+    for excitLayer in range(1, EXCIT_MODULES + 1):
+      net.layer[0].S[excitLayer] = np.zeros([INHIB_NEURONS, EXCIT_NEURONS_PER_MODULE])
+
     # Connect 4 random excit -> inhib
     for toInhibNeuron in range(INHIB_NEURONS):
       fromLayer = rn.randint(1, EXCIT_MODULES + 1) 
       fromNeurons = rn.choice(EXCIT_NEURONS_PER_MODULE, INHIB_INPUTS, replace=0)
-      net.layer[0].S[fromLayer] = np.zeros([INHIB_NEURONS, EXCIT_NEURONS_PER_MODULE])
       for fromNeuron in fromNeurons:
          net.layer[0].S[fromLayer][toInhibNeuron][fromNeuron] = 1  
 
