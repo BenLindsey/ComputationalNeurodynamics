@@ -13,7 +13,7 @@ INHIB_INPUTS = 4
 
 CONNECTIONS_PER_MODULE = 1000
 
-T  = 500  # Simulation time
+T  = 20  # Simulation time
 Ib = 5    # Base current
 DMAX = 10
  
@@ -97,13 +97,12 @@ class ModNetwork:
     layer.d = 2 * np.ones(n)
     layer.I = np.zeros(n)
 
-# net.layer[1].factor[0] 
     layer.delay[0] = np.ones([INHIB_NEURONS, INHIB_NEURONS], dtype=int)
     layer.factor[0] = 1
 
     for i in range(1, EXCIT_MODULES + 1):
       layer.delay[i] = np.ones([INHIB_NEURONS, EXCIT_NEURONS_PER_MODULE])
-      layer.factor[i] = 2
+      layer.factor[i] = 50
 
   def _to_excitatory_layer(self, layer):
     n = layer.N
@@ -115,7 +114,7 @@ class ModNetwork:
     layer.I = Ib * np.ones(n)
 
     layer.delay[0] = np.ones([EXCIT_NEURONS_PER_MODULE, INHIB_NEURONS])
-    layer.factor[0] = 50 
+    layer.factor[0] = 2 
 
     for i in range(1, EXCIT_MODULES + 1):
       layer.delay[i] = rn.randint(low=1, high=20, size=(EXCIT_NEURONS_PER_MODULE, EXCIT_NEURONS_PER_MODULE)) 
@@ -147,6 +146,7 @@ mn = ModNetwork(0.1)
 
 ## SIMULATE
 for t in xrange(T):
+   print(t)
    mn.net.Update(t)
 
 # Bring all connections into one matrix to display.
