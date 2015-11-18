@@ -65,7 +65,7 @@ class ModNetwork:
       
       # todo pythonically
       for j in range(EXCIT_MODULES):
-      	net.layer[i + 1].S[j + 1] = connections if j == i else [[0 for x in range(EXCIT_NEURONS_PER_MODULE)] for y in range(EXCIT_NEURONS_PER_MODULE)]
+      	net.layer[i + 1].S[j + 1] = connections if j == i else np.zeros([EXCIT_NEURONS_PER_MODULE, EXCIT_NEURONS_PER_MODULE])
 
       rewire_set[i + 1] = connection_set
 
@@ -145,21 +145,21 @@ class ModNetwork:
 mn = ModNetwork(0.1)
 
 ## SIMULATE
-#for t in xrange(T):
-#   mn.net.Update(t)
+for t in xrange(T):
+   mn.net.Update(t)
 
 # Bring all connections into one matrix to display.
 # TODO: Ugly
 all_connections = []
 all_firings = []
 for fromLayer in range(9):
-  for fromNeuron in range(mn.net.layer[fromLayer].N):
-    row = []
-    for toLayer in range(9):
-      for toNeuron in range(mn.net.layer[toLayer].N):
-        row.append(mn.net.layer[toLayer].S[fromLayer][toNeuron][fromNeuron])
+    for fromNeuron in range(mn.net.layer[fromLayer].N):
+      row = []
+      for toLayer in range(9):
+        for toNeuron in range(mn.net.layer[toLayer].N):
+          row.append(mn.net.layer[toLayer].S[fromLayer][toNeuron][fromNeuron])
       
-    all_connections.append(row)
+      all_connections.append(row)
 
 plt.matshow(all_connections)
 plt.xlabel('To')
