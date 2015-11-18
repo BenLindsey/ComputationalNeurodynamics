@@ -12,7 +12,10 @@ INHIB_NEURONS = 200
 INHIB_INPUTS = 4
 
 CONNECTIONS_PER_MODULE = 1000
-    
+
+T  = 500  # Simulation time
+Ib = 5    # Base current
+ 
 class ModNetwork:
 
   def __init__(self, p):
@@ -35,12 +38,20 @@ class ModNetwork:
     for i in range(EXCIT_MODULES):
       self._to_excitatory_layer(net.layer[i + 1])
 
-    # Create the connections in each module.
+    for i in range(len(neurons_per_layer)):
+      self._init_layer(net.layer[i])
+
+   # Create the connections in each module.
     rewire_set = {}
     for i in range(EXCIT_MODULES):
       (connections, connection_set) = self._create_random_connections(EXCIT_NEURONS_PER_MODULE, CONNECTIONS_PER_MODULE)
 
-      net.layer[i + 1].S[i + 1] = connections
+      net.layer[i + 1].S[0] = [[0 for x in range(INHIB_NEURONS)] for y in range(INHIB_NEURONS)]
+      
+      # todo pythonically
+      for j in range(EXCIT_MODULES):
+      	net.layer[i + 1].S[j + 1] = connections if j == i else [[0 for x in range(EXCIT_NEURONS_PER_MODULE)] for y in range(EXCIT_NEURONS_PER_MODULE)]
+
       rewire_set[i + 1] = connection_set
 
     return self._rewire_net(net, p, rewire_set)
@@ -55,8 +66,9 @@ class ModNetwork:
 
           # Must go to another layer?
           toLayer = rn.randint(net.Nlayers)
-          end = rn.randint(net.layer[toLayer].N)
+          newEnd = rn.randint(net.layer[toLayer].N)
 
+          net.layer[layer].S[toLayer][newEnd][start] = 1
     return net
 
   def _to_inhibitory_layer(self, layer):
@@ -66,6 +78,7 @@ class ModNetwork:
     layer.b = 0.25 * np.ones(n)
     layer.c = -65 * np.ones(n)
     layer.d = 2 * np.ones(n)
+    layer.I = np.zeros(n)
 
   def _to_excitatory_layer(self, layer):
     n = layer.N
@@ -73,7 +86,13 @@ class ModNetwork:
     layer.a = 0.02 * np.ones(n)
     layer.b = 0.2 * np.ones(n)
     layer.c = -65 * np.ones(n)
-    layer.d = 8 * np.ones(n)
+    layer.d = 8 * np.ones(n) 
+    layer.I = Ib * np.ones(n)
+
+  def _init_layer(self, layer):
+    layer.v = -65 * np.ones(layer.N)
+    layer.u = layer.b * layer.v
+    layer.firings = np.array([])
 
   def _create_random_connections(self, size, connections):
     connection_matrix = [[0 for x in range(size)] for y in range(size)]
@@ -94,10 +113,17 @@ class ModNetwork:
 
 mn = ModNetwork(0.1)
 
+## SIMULATE
+for t in xrange(T):
+   mn.net.Update(t)
+
 # Bring all connections into one matrix to display.
 # TODO: Ugly
 all_connections = []
+all_firings = []
 for y in range(9):
+  if y > 1:
+  	all_firings.append(mn.net.layer[y].firings)
   for i in range(mn.net.layer[y].N):
     row = []
     for x in range(9):
@@ -106,6 +132,7 @@ for y in range(9):
       else:
         row.extend([0] * mn.net.layer[x].N)
     all_connections.append(row)
+print all_firings
 
 plt.matshow(all_connections)
 plt.show()
