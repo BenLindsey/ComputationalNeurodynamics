@@ -158,10 +158,8 @@ for fromLayer in range(9):
       
       all_connections.append(row)
 
-#print all_connections
-
+plt.matshow(all_connections)
 plt.xlabel('To')
 plt.ylabel('From')
-plt.matshow(all_connections)
 plt.show()
 
