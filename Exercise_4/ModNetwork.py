@@ -150,6 +150,7 @@ for t in xrange(T):
 all_connections = []
 all_firings = []
 for fromLayer in range(9):
+    all_firings.append(mn.net.layer[fromLayer].firings)
     for fromNeuron in range(mn.net.layer[fromLayer].N):
       row = []
       for toLayer in range(9):
@@ -158,8 +159,13 @@ for fromLayer in range(9):
       
       all_connections.append(row)
 
-plt.matshow(all_connections)
-plt.xlabel('To')
-plt.ylabel('From')
-plt.show()
+#plt.matshow(all_connections)
+#plt.xlabel('To')
+#plt.ylabel('From')
+#plt.show()
+print(all_firings)
+#plt.matshow(all_firings)
+#plt.xlabel('Neurons')
+#plt.ylabel('From')
+#plt.show()
 
