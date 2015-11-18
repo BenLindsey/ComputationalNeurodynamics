@@ -13,9 +13,9 @@ INHIB_INPUTS = 4
 
 CONNECTIONS_PER_MODULE = 1000
 
-T  = 20  # Simulation time
+T  = 500  # Simulation time
 Ib = 5    # Base current
-DMAX = 10
+DMAX = 3
  
 class ModNetwork:
 
@@ -41,7 +41,7 @@ class ModNetwork:
     for i in range(len(neurons_per_layer)):
       self._init_layer(net.layer[i])
  
-   # map(self._init_layer, net.layer)
+    # map(self._init_layer, net.layer)
 
     # Connect inhib -> everything
     for i in range(len(neurons_per_layer)):
@@ -57,7 +57,7 @@ class ModNetwork:
       fromLayer = rn.randint(1, EXCIT_MODULES + 1) 
       fromNeurons = rn.choice(EXCIT_NEURONS_PER_MODULE, INHIB_INPUTS, replace=0)
       for fromNeuron in fromNeurons:
-         net.layer[0].S[fromLayer][toInhibNeuron][fromNeuron] = rn.rand()
+         net.layer[0].S[fromLayer][toInhibNeuron][fromNeuron] = rn.uniform(0, 1)
 
     # Connect excit -> excit in modules
     rewire_set = {}
@@ -91,9 +91,11 @@ class ModNetwork:
   def _to_inhibitory_layer(self, layer):
     n = layer.N
 
+    r = rn.rand(n)
+
     layer.a = 0.02 * np.ones(n)
     layer.b = 0.25 * np.ones(n)
-    layer.c = -65 * np.ones(n)
+    layer.c = -65 * np.ones(n) 
     layer.d = 2 * np.ones(n)
     layer.I = np.zeros(n)
 
@@ -107,10 +109,12 @@ class ModNetwork:
   def _to_excitatory_layer(self, layer):
     n = layer.N
 
+    r = rn.rand(n)
+ 
     layer.a = 0.02 * np.ones(n)
-    layer.b = 0.2 * np.ones(n)
-    layer.c = -65 * np.ones(n)
-    layer.d = 8 * np.ones(n) 
+    layer.b = 0.20 * np.ones(n)
+    layer.c = -65 + 15*(r**2)
+    layer.d = 8 - 6*(r**2) 
     layer.I = Ib * np.ones(n)
 
     layer.delay[0] = np.ones([EXCIT_NEURONS_PER_MODULE, INHIB_NEURONS])
@@ -142,11 +146,16 @@ class ModNetwork:
 
     return (connection_matrix, connection_set)
 
-mn = ModNetwork(0.1)
+mn = ModNetwork(0)
 
 ## SIMULATE
-for t in xrange(T):
+  
+for t in xrange(T):  
    print(t)
+ 
+   for i in range(1, EXCIT_MODULES + 1):
+     mn.net.layer[i].I = rn.poisson(0.01, 100) * 15 
+   
    mn.net.Update(t)
 
 # Bring all connections into one matrix to display.
