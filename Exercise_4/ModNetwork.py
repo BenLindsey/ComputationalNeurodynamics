@@ -40,13 +40,25 @@ class ModNetwork:
 
     for i in range(len(neurons_per_layer)):
       self._init_layer(net.layer[i])
+ 
+   # map(self._init_layer, net.layer)
 
-   # Create the connections in each module.
+    # Connect inhib -> everything
+    for i in range(len(neurons_per_layer)):
+      net.layer[i].S[0] = np.ones([INHIB_NEURONS if i == 0 else EXCIT_NEURONS_PER_MODULE, INHIB_NEURONS]) 
+
+    # Connect 4 random excit -> inhib
+    for toInhibNeuron in range(INHIB_NEURONS):
+      fromLayer = rn.randint(1, EXCIT_MODULES + 1) 
+      fromNeurons = rn.choice(EXCIT_NEURONS_PER_MODULE, INHIB_INPUTS, replace=0)
+      net.layer[0].S[fromLayer] = np.zeros([INHIB_NEURONS, EXCIT_NEURONS_PER_MODULE])
+      for fromNeuron in fromNeurons:
+         net.layer[0].S[fromLayer][toInhibNeuron][fromNeuron] = 1  
+
+    # Connect excit -> excit in modules
     rewire_set = {}
     for i in range(EXCIT_MODULES):
       (connections, connection_set) = self._create_random_connections(EXCIT_NEURONS_PER_MODULE, CONNECTIONS_PER_MODULE)
-
-      net.layer[i + 1].S[0] = [[0 for x in range(INHIB_NEURONS)] for y in range(INHIB_NEURONS)]
       
       # todo pythonically
       for j in range(EXCIT_MODULES):
@@ -54,6 +66,7 @@ class ModNetwork:
 
       rewire_set[i + 1] = connection_set
 
+    # Rewure excit -> excit
     return self._rewire_net(net, p, rewire_set)
 
   def _rewire_net(self, net, p, rewire_set):
@@ -64,11 +77,11 @@ class ModNetwork:
 
           net.layer[layer].S[layer][end][start] = 0
 
-          # Must go to another layer?
+          # todo Must go to another layer? Can go to inhib layer?
           toLayer = rn.randint(net.Nlayers)
           newEnd = rn.randint(net.layer[toLayer].N)
 
-          net.layer[layer].S[toLayer][newEnd][start] = 1
+          net.layer[toLayer].S[layer][newEnd][start] = 1
     return net
 
   def _to_inhibitory_layer(self, layer):
@@ -80,6 +93,14 @@ class ModNetwork:
     layer.d = 2 * np.ones(n)
     layer.I = np.zeros(n)
 
+# net.layer[1].factor[0] 
+    layer.delay[0] = np.ones([INHIB_NEURONS, INHIB_NEURONS], dtype=int)
+    layer.factor[0] = 1
+
+    for i in range(1, EXCIT_MODULES + 1):
+      layer.delay[i] = np.ones([INHIB_NEURONS, EXCIT_NEURONS_PER_MODULE])
+      layer.factor[i] = 2
+
   def _to_excitatory_layer(self, layer):
     n = layer.N
 
@@ -88,6 +109,13 @@ class ModNetwork:
     layer.c = -65 * np.ones(n)
     layer.d = 8 * np.ones(n) 
     layer.I = Ib * np.ones(n)
+
+    layer.delay[0] = np.ones([EXCIT_NEURONS_PER_MODULE, INHIB_NEURONS])
+    layer.factor[0] = 50 
+
+    for i in range(1, EXCIT_MODULES + 1):
+      layer.delay[i] = rn.randint(low=1, high=20, size=(EXCIT_NEURONS_PER_MODULE, EXCIT_NEURONS_PER_MODULE)) 
+      layer.factor[i] = 17 
 
   def _init_layer(self, layer):
     layer.v = -65 * np.ones(layer.N)
@@ -114,26 +142,26 @@ class ModNetwork:
 mn = ModNetwork(0.1)
 
 ## SIMULATE
-for t in xrange(T):
-   mn.net.Update(t)
+#for t in xrange(T):
+#   mn.net.Update(t)
 
 # Bring all connections into one matrix to display.
 # TODO: Ugly
 all_connections = []
 all_firings = []
-for y in range(9):
-  if y > 1:
-  	all_firings.append(mn.net.layer[y].firings)
-  for i in range(mn.net.layer[y].N):
-    row = []
-    for x in range(9):
-      if x in mn.net.layer[y].S:
-        row.extend(mn.net.layer[y].S[x][i])
-      else:
-        row.extend([0] * mn.net.layer[x].N)
-    all_connections.append(row)
-print all_firings
+for fromLayer in range(9):
+  for toLayer in range(9):
+    for fromNeuron in range(mn.net.layer[fromLayer].N):
+      row = []
+      for toNeuron in range(mn.net.layer[toLayer].N):
+        row.append(mn.net.layer[toLayer].S[fromLayer][toNeuron][fromNeuron])
+      
+      all_connections.append(row)
 
+print all_connections
+
+plt.xlabel('To')
+plt.ylabel('From')
 plt.matshow(all_connections)
 plt.show()
 
