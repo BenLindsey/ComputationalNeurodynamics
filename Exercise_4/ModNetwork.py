@@ -15,6 +15,7 @@ CONNECTIONS_PER_MODULE = 1000
 
 T  = 500  # Simulation time
 Ib = 5    # Base current
+DMAX = 10
  
 class ModNetwork:
 
@@ -24,12 +25,11 @@ class ModNetwork:
     self.net = self._build_net(p)
 
   def _build_net(self, p):
-    dmax = 1
     neurons_per_layer = [INHIB_NEURONS] + [EXCIT_NEURONS_PER_MODULE] * EXCIT_MODULES
 
     # Create a net where the first layer contains all inhibitory neurons, the
     # remaining layers each contain a module of excitatory neurons.
-    net = IzNetwork(neurons_per_layer, dmax)
+    net = IzNetwork(neurons_per_layer, DMAX)
 
     # Turn the first layer into inhibtory neurons.
     self._to_inhibitory_layer(net.layer[0])
@@ -127,7 +127,7 @@ class ModNetwork:
     layer.firings = np.array([])
 
   def _create_random_connections(self, size, connections):
-    connection_matrix = [[0 for x in range(size)] for y in range(size)]
+    connection_matrix = np.zeros([size, size])
     connection_set = []
 
     for i in range(connections):
@@ -172,7 +172,6 @@ for layer in range(9):
     all_firings_x.append(firing[0])
     all_firings_y.append(idx + firing[1])
 
-plt.matshow(all_connections)
 fig = plt.figure()
 ax = fig.add_subplot(111)
 cax = ax.matshow(all_connections)
