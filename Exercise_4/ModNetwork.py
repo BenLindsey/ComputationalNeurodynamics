@@ -45,7 +45,8 @@ class ModNetwork:
 
     # Connect inhib -> everything
     for i in range(len(neurons_per_layer)):
-      net.layer[i].S[0] = np.ones([INHIB_NEURONS if i == 0 else EXCIT_NEURONS_PER_MODULE, INHIB_NEURONS]) 
+      toSize = INHIB_NEURONS if i == 0 else EXCIT_NEURONS_PER_MODULE
+      net.layer[i].S[0] = rn.uniform(-1, 0, size=(toSize, INHIB_NEURONS))
 
     # Initialise all excit -> inhib connections to 0
     for excitLayer in range(1, EXCIT_MODULES + 1):
@@ -56,7 +57,7 @@ class ModNetwork:
       fromLayer = rn.randint(1, EXCIT_MODULES + 1) 
       fromNeurons = rn.choice(EXCIT_NEURONS_PER_MODULE, INHIB_INPUTS, replace=0)
       for fromNeuron in fromNeurons:
-         net.layer[0].S[fromLayer][toInhibNeuron][fromNeuron] = 1  
+         net.layer[0].S[fromLayer][toInhibNeuron][fromNeuron] = rn.rand()
 
     # Connect excit -> excit in modules
     rewire_set = {}
@@ -172,6 +173,11 @@ for layer in range(9):
     all_firings_y.append(idx + firing[1])
 
 plt.matshow(all_connections)
+fig = plt.figure()
+ax = fig.add_subplot(111)
+cax = ax.matshow(all_connections)
+fig.colorbar(cax)
+
 plt.xlabel('To')
 plt.ylabel('From')
 plt.show()
