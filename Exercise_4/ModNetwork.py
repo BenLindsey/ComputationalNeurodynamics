@@ -151,9 +151,7 @@ for t in xrange(T):
 # Bring all connections into one matrix to display.
 # TODO: Ugly
 all_connections = []
-all_firings = []
 for fromLayer in range(9):
-    all_firings.append(mn.net.layer[fromLayer].firings)
     for fromNeuron in range(mn.net.layer[fromLayer].N):
       row = []
       for toLayer in range(9):
@@ -162,13 +160,21 @@ for fromLayer in range(9):
       
       all_connections.append(row)
 
-#plt.matshow(all_connections)
-#plt.xlabel('To')
-#plt.ylabel('From')
-#plt.show()
-print(all_firings)
-#plt.matshow(all_firings)
-#plt.xlabel('Neurons')
-#plt.ylabel('From')
-#plt.show()
+all_firings_x = []
+all_firings_y = []
 
+for layer in range(9):
+  idx = 100 * (layer + 1) if layer > 0 else 0
+  
+  for i in range(len(mn.net.layer[layer].firings)):
+    firing = mn.net.layer[layer].firings[i]
+    all_firings_x.append(firing[0])
+    all_firings_y.append(idx + firing[1])
+
+plt.matshow(all_connections)
+plt.xlabel('To')
+plt.ylabel('From')
+plt.show()
+
+plt.scatter(all_firings_x, all_firings_y)
+plt.show()
