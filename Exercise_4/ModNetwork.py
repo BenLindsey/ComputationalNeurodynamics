@@ -54,8 +54,8 @@ class ModNetwork:
           net.layer[layer].S[layer][end][start] = 0
 
           # Must go to another layer?
-          toLayer = rand(net.Nlayers)
-          end = rand(net.layer[toLayer].N)
+          toLayer = rn.randint(net.Nlayers)
+          end = rn.randint(net.layer[toLayer].N)
 
     return net
 
