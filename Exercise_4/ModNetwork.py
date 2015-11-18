@@ -150,18 +150,16 @@ mn = ModNetwork(0.1)
 all_connections = []
 all_firings = []
 for fromLayer in range(9):
-  for toLayer in range(9):
-    for fromNeuron in range(mn.net.layer[fromLayer].N):
-      row = []
+  for fromNeuron in range(mn.net.layer[fromLayer].N):
+    row = []
+    for toLayer in range(9):
       for toNeuron in range(mn.net.layer[toLayer].N):
         row.append(mn.net.layer[toLayer].S[fromLayer][toNeuron][fromNeuron])
       
-      all_connections.append(row)
+    all_connections.append(row)
 
-print all_connections
-
+plt.matshow(all_connections)
 plt.xlabel('To')
 plt.ylabel('From')
-plt.matshow(all_connections)
 plt.show()
 
