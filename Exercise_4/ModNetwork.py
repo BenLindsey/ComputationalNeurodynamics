@@ -181,6 +181,27 @@ for layer in range(1, 9):
     all_firings_x.append(firing[0])
     all_firings_y.append(idx + firing[1])
 
+np_firings_x = np.array(all_firings_x)
+np_firings_y = np.array(all_firings_y)
+mean_firings_x = {}
+mean_firings_y = {}
+
+for layer in range(EXCIT_MODULES):
+  mean_firings_x[layer] = []
+  mean_firings_y[layer] = []
+  for i in range(0, 49):
+    t = 20 * i
+    tMin = t - 25
+    tMax = t + 25
+
+    inRange = (np_firings_x >= tMin) * (np_firings_x < tMax) * (np_firings_y >= 100 * layer) * (np_firings_y < 100 + 100 * layer)    
+    
+    idx = np.where(inRange)
+    y = len(idx[0]) / 50.0
+
+    mean_firings_y[layer].append(y)
+    mean_firings_x[layer].append(t)  
+
 fig = plt.figure()
 ax = fig.add_subplot(111)
 cax = ax.matshow(all_connections)
@@ -191,4 +212,10 @@ plt.ylabel('From')
 plt.show()
 
 plt.scatter(all_firings_x, all_firings_y)
+plt.show()
+
+for layer in mean_firings_x:
+  print(mean_firings_y[layer])
+  plt.plot(mean_firings_x[layer], mean_firings_y[layer])
+
 plt.show()
