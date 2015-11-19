@@ -146,7 +146,8 @@ class ModNetwork:
 
     return (connection_matrix, connection_set)
 
-mn = ModNetwork(0)
+p = 0
+mn = ModNetwork(p)
 
 ## SIMULATE
 for t in xrange(T):  
@@ -177,8 +178,8 @@ for fromLayer in range(9):
 all_firings_x = []
 all_firings_y = []
 
-for layer in range(1, 9):
-  idx = 100 * layer
+for layer in range(1, EXCIT_MODULES + 1):
+  idx = 100 * (layer - 1)
   
   for i in range(len(mn.net.layer[layer].firings)):
     firing = mn.net.layer[layer].firings[i]
@@ -206,6 +207,7 @@ for layer in range(EXCIT_MODULES):
     mean_firings_y[layer].append(y)
     mean_firings_x[layer].append(t)  
 
+# Plot the connectivity matrix.
 fig = plt.figure()
 ax = fig.add_subplot(111)
 cax = ax.matshow(all_connections)
@@ -215,10 +217,23 @@ plt.xlabel('To')
 plt.ylabel('From')
 plt.show()
 
-plt.scatter(all_firings_x, all_firings_y)
-plt.show()
+plt.figure(1)
 
+# Plot the firings.
+plt.subplot(211)
+plt.scatter(all_firings_x, all_firings_y)
+plt.xlabel('Time (ms) + 0s')
+plt.xlim([0, T])
+plt.ylabel('Neuron number')
+plt.ylim([EXCIT_MODULES * EXCIT_NEURONS_PER_MODULE, 0])
+plt.title('p = %s' % p)
+
+# Plot the mean firing rate for each module.
+plt.subplot(212)
 for layer in mean_firings_x:
   plt.plot(mean_firings_x[layer], mean_firings_y[layer])
 
+plt.xlabel('Time (ms) + 0s')
+plt.xlim([0, 1000])
+plt.ylabel('Mean firing rate')
 plt.show()
