@@ -1,6 +1,7 @@
 import numpy as np
 import numpy.random as rn
 import matplotlib.pyplot as plt
+import sys
 
 from IzNetwork import IzNetwork
 
@@ -38,10 +39,9 @@ class ModNetwork:
     for i in range(EXCIT_MODULES):
       self._to_excitatory_layer(net.layer[i + 1])
 
+    # Set the v, u and firing values for each layer.
     for i in range(len(neurons_per_layer)):
       self._init_layer(net.layer[i])
- 
-    # map(self._init_layer, net.layer)
 
     # Connect inhib -> everything
     for i in range(len(neurons_per_layer)):
@@ -93,9 +93,10 @@ class ModNetwork:
 
     r = rn.rand(n)
 
-    layer.a = 0.02 * np.ones(n)
-    layer.b = 0.25 * np.ones(n)
-    layer.c = -65 * np.ones(n) 
+    # Use random values from: http://izhikevich.org/publications/net.m
+    layer.a = 0.02 * np.ones(n) + 0.08 * r
+    layer.b = 0.25 * np.ones(n) - 0.25 * r
+    layer.c = -65 * np.ones(n)
     layer.d = 2 * np.ones(n)
     layer.I = np.zeros(n)
 
@@ -123,7 +124,6 @@ class ModNetwork:
     for i in range(1, EXCIT_MODULES + 1):
       layer.delay[i] = rn.randint(low=1, high=20, size=(EXCIT_NEURONS_PER_MODULE, EXCIT_NEURONS_PER_MODULE)) 
       layer.factor[i] = 17 
-
   def _init_layer(self, layer):
     layer.v = -65 * np.ones(layer.N)
     layer.u = layer.b * layer.v
@@ -149,14 +149,17 @@ class ModNetwork:
 mn = ModNetwork(0)
 
 ## SIMULATE
-  
 for t in xrange(T):  
-   print(t)
+   sys.stdout.write('Simulating %s ms / %s ms\r' % (t, T - 1))
+   sys.stdout.flush()
  
    for i in range(1, EXCIT_MODULES + 1):
      mn.net.layer[i].I = rn.poisson(0.01, 100) * 15
    
    mn.net.Update(t)
+
+# Empty line to prevent overwriting the last simulation line.
+print
 
 # Bring all connections into one matrix to display.
 # TODO: Ugly
@@ -170,6 +173,7 @@ for fromLayer in range(9):
       
       all_connections.append(row)
 
+# Find the time and neuron ID of all firings.
 all_firings_x = []
 all_firings_y = []
 
@@ -215,7 +219,6 @@ plt.scatter(all_firings_x, all_firings_y)
 plt.show()
 
 for layer in mean_firings_x:
-  print(mean_firings_y[layer])
   plt.plot(mean_firings_x[layer], mean_firings_y[layer])
 
 plt.show()
