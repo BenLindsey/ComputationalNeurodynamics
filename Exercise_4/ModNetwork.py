@@ -12,7 +12,6 @@ INHIB_INPUTS = 4
 
 CONNECTIONS_PER_MODULE = 1000
 
-Ib = 5    # Base current
 DMAX = 10
  
 class ModNetwork:
@@ -113,7 +112,6 @@ class ModNetwork:
     layer.b = 0.20 * np.ones(n)
     layer.c = -65 + 15*(r**2)
     layer.d = 8 - 6*(r**2) 
-    layer.I = Ib * np.ones(n)
 
     layer.delay[0] = np.ones([EXCIT_NEURONS_PER_MODULE, INHIB_NEURONS])
     layer.factor[0] = 2 
@@ -121,6 +119,7 @@ class ModNetwork:
     for i in range(1, EXCIT_MODULES + 1):
       layer.delay[i] = rn.randint(low=1, high=20, size=(EXCIT_NEURONS_PER_MODULE, EXCIT_NEURONS_PER_MODULE)) 
       layer.factor[i] = 17 
+
   def _init_layer(self, layer):
     layer.v = -65 * np.ones(layer.N)
     layer.u = layer.b * layer.v
