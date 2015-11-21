@@ -13,6 +13,8 @@ INHIB_INPUTS = 4
 CONNECTIONS_PER_MODULE = 1000
 
 DMAX = 10
+
+EXTRA_I = 15 # Current to cause spontaneous firing
  
 class ModNetwork:
 
@@ -20,6 +22,12 @@ class ModNetwork:
     assert 0 <= p <= 1
 
     self.net = self._build_net(p)
+
+  def update_with_poisson(self, l, t):
+    for i in range(1, EXCIT_MODULES + 1):
+      self.net.layer[i].I = rn.poisson(l, EXCIT_NEURONS_PER_MODULE) * EXTRA_I
+    
+    self.net.Update(t)
 
   def _build_net(self, p):
     neurons_per_layer = [INHIB_NEURONS] + [EXCIT_NEURONS_PER_MODULE] * EXCIT_MODULES

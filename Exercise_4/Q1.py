@@ -29,7 +29,7 @@ def main():
     plot_connectivity_matrix(p, all_connections)
     
     # Simulate
-    run_net(mn.net)
+    run_net(mn)
     
     # Find the time and neuron ID of all firings.
     (all_firings_x, all_firings_y) = get_firings(mn.net)
@@ -42,15 +42,12 @@ def main():
     # Plot firings and mean firings.
     plot_firings(p, all_firings_x, all_firings_y, mean_firings_x, mean_firings_y)
 
-def run_net(net):
+def run_net(mn):
   for t in xrange(T):  
      sys.stdout.write('Simulating %s ms / %s ms\r' % (t, T - 1))
      sys.stdout.flush()
    
-     for i in range(1, EXCIT_MODULES + 1):
-       net.layer[i].I = rn.poisson(0.01, 100) * 15
-     
-     net.Update(t)
+     mn.update_with_poisson(0.01, t)
   
   # Empty line to prevent overwriting the last simulation line.
   print
