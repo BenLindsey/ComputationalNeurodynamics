@@ -116,11 +116,11 @@ def plot_connectivity_matrix(p, all_connections):
 def plot_firings(p, all_firings_x, all_firings_y, mean_firings_x, mean_firings_y):
   output_name = '%sfirings_p=%.1f.eps' % (PLOT_OUTPUT_DIR, p)
 
-  plt.figure(1)
+  plt.figure()
   
   # Plot the firings.
   plt.subplot(211)
-  plt.scatter(all_firings_x, all_firings_y)
+  plt.scatter(all_firings_x, all_firings_y, s=1)
 
   plt.xlabel('Time (ms) + 0s')
   plt.xlim([0, T])
