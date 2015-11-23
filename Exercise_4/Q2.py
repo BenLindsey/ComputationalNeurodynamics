@@ -10,7 +10,7 @@ import sys
 
 N_TRIALS = 20
 
-SIM_TIME_MS = 1 * 1000
+SIM_TIME_MS = 60 * 1000
 
 OUTPUT_FILE = 'result.txt'
 
