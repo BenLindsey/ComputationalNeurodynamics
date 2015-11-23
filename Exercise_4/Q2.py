@@ -10,7 +10,7 @@ import sys
 
 N_TRIALS = 20
 
-SIM_TIME_MS = 1 * 500
+SIM_TIME_MS = 1 * 60000
 
 def main():
   startJVM(getDefaultJVMPath(), '-Djava.class.path=../infodynamics.jar')
@@ -43,7 +43,7 @@ def main():
     print 'Got', len(time_series), 'time series of length', len(time_series[1])
 
     calc.setProperty('PROP_NORMALISE', 'true')
-    calc.initialise(20)
+    calc.initialise(len(time_series[1]))
 
     calc.startAddObservations()
     for t in time_series:
