@@ -121,10 +121,14 @@ def plot_firings(p, all_firings_x, all_firings_y, mean_firings_x, mean_firings_y
   # Plot the firings.
   plt.subplot(211)
   plt.scatter(all_firings_x, all_firings_y)
+
   plt.xlabel('Time (ms) + 0s')
   plt.xlim([0, T])
+
   plt.ylabel('Neuron number')
   plt.ylim([EXCIT_MODULES * EXCIT_NEURONS_PER_MODULE, 0])
+
+  plt.grid(True)
   plt.title('p = %s' % p)
   
   # Plot the mean firing rate for each module.

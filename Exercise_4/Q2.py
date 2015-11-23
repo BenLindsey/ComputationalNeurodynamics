@@ -11,6 +11,9 @@ SIM_TIME_MS = 1 * 1000
 
 def main():
   for i in range(N_TRIALS):
+    print
+    print 'Trial', (i + 1), ':'
+
     p = rn.rand()
 
     mn = ModNetwork(p)
@@ -19,7 +22,14 @@ def main():
     run_net(mn)
 
     time_series = get_time_series(mn.net)
-    print time_series
+
+    # Ensure that there is a time series for each module and all time series
+    # have the same length.
+    assert len(time_series) == EXCIT_MODULES, 'incorrect number of time series'
+    assert all(len(time_series[t]) == len(time_series[1]) for t in time_series), \
+      'time series have different lengths'
+
+    print 'Got', len(time_series), 'time series of length', len(time_series[1])
 
 def run_net(mn):
   for t in xrange(SIM_TIME_MS):  
@@ -37,7 +47,7 @@ def get_time_series(net):
   for layer in range(1, EXCIT_MODULES + 1):
 
     # Get total number of neurons which fired at each time point.
-    sums = get_cumalative_firings(net.layer[layer].firings)
+    sums = get_cumulative_firings(net.layer[layer].firings)
 
     time_series[layer] = []
     for i in np.arange(100, SIM_TIME_MS, 20):
@@ -48,7 +58,7 @@ def get_time_series(net):
 
   return time_series
 
-def get_cumalative_firings(firings):
+def get_cumulative_firings(firings):
   index = 0
   sums = []
 
