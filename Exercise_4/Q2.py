@@ -1,20 +1,31 @@
 from ModNetwork import *
 
+from jpype import *
+
 import numpy as np
 import numpy.random as rn
+import matplotlib.pyplot as plt
 
 import sys
 
 N_TRIALS = 20
 
-SIM_TIME_MS = 1 * 1000
+SIM_TIME_MS = 1 * 500
 
 def main():
-  for i in range(N_TRIALS):
-    print
-    print 'Trial', (i + 1), ':'
+  startJVM(getDefaultJVMPath(), '-Djava.class.path=../infodynamics.jar')
 
+  calcClass = JPackage('infodynamics.measures.continuous.kraskov').MultiInfoCalculatorKraskov2
+  calc = calcClass()
+
+  ps = []
+  ys = []
+
+  for i in range(N_TRIALS):
     p = rn.rand()
+
+    print
+    print 'Trial', (i + 1), ', p =', p, ':'
 
     mn = ModNetwork(p)
 
@@ -30,6 +41,26 @@ def main():
       'time series have different lengths'
 
     print 'Got', len(time_series), 'time series of length', len(time_series[1])
+
+    calc.setProperty('PROP_NORMALISE', 'true')
+    calc.initialise(20)
+
+    calc.startAddObservations()
+    for t in time_series:
+      java_series = JArray(JDouble, 1)(time_series[t])
+      calc.addObservation(java_series)
+    calc.finaliseAddObservations()
+
+    result = calc.computeLocalOfPreviousObservations()
+    #result = calc.computeAverageLocalOfObservations()
+
+    ps.append(p)
+    ys.append(result)
+
+  shutdownJVM()
+
+  plt.scatter(ps, ys)
+  plt.show()
 
 def run_net(mn):
   for t in xrange(SIM_TIME_MS):  
