@@ -10,7 +10,9 @@ import sys
 
 N_TRIALS = 20
 
-SIM_TIME_MS = 1 * 500
+SIM_TIME_MS = 1 * 1000
+
+OUTPUT_FILE = 'result.txt'
 
 def main():
   startJVM(getDefaultJVMPath(), '-Djava.class.path=../infodynamics.jar')
@@ -20,6 +22,9 @@ def main():
 
   ps = []
   ys = []
+
+  # Clear the output file.
+  open(OUTPUT_FILE, "w").close()
 
   for i in range(N_TRIALS):
     p = rn.rand()
@@ -43,7 +48,7 @@ def main():
     print 'Got', len(time_series), 'time series of length', len(time_series[1])
 
     calc.setProperty('PROP_NORMALISE', 'true')
-    calc.initialise(20)
+    calc.initialise(len(time_series[1]))
 
     calc.startAddObservations()
     for t in time_series:
@@ -51,16 +56,21 @@ def main():
       calc.addObservation(java_series)
     calc.finaliseAddObservations()
 
-    result = calc.computeLocalOfPreviousObservations()
-    #result = calc.computeAverageLocalOfObservations()
+    result = calc.computeAverageLocalOfObservations()
+
+    # Save the result in a file.
+    output_file = open(OUTPUT_FILE, "a")
+    output_file.write('%f, %f' % (p, result))
+    output_file.write('\n')
+    output_file.close()
 
     ps.append(p)
     ys.append(result)
 
-  shutdownJVM()
-
   plt.scatter(ps, ys)
-  plt.show()
+  plt.savefig('plots/multiinformation.eps', format='eps')
+
+  shutdownJVM()
 
 def run_net(mn):
   for t in xrange(SIM_TIME_MS):  
