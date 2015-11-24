@@ -8,11 +8,12 @@ import matplotlib.pyplot as plt
 
 import sys
 
-N_TRIALS = 2
+N_TRIALS = 20
 
-SIM_TIME_MS = 1 * 1000
+SIM_TIME_MS = 60 * 1000
 
 OUTPUT_FILE = 'result.txt'
+SERIES_FILE = 'series_'
 
 def main():
   startJVM(getDefaultJVMPath(), '-Djava.class.path=../infodynamics.jar')
@@ -57,7 +58,8 @@ def main():
     for t in time_series:
       time_series_2d.append(time_series[t])
 
-    print time_series_2d
+    np.savetxt(SERIES_FILE + str(i) + ".txt", time_series_2d)
+
     java_time_series = JArray(JDouble, 2)(time_series_2d)
     calc.setObservations(java_time_series)
 
