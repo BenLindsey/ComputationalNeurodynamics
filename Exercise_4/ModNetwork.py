@@ -89,7 +89,8 @@ class ModNetwork:
 
           toLayer = 1 + rn.randint(EXCIT_MODULES)
           newEnd = rn.randint(EXCIT_NEURONS_PER_MODULE)
-          while net.layer[toLayer].S[layer][newEnd][start] == 1:
+          while net.layer[toLayer].S[layer][newEnd][start] == 1 \
+              or (layer == toLayer and newEnd == start):
             toLayer = 1 + rn.randint(EXCIT_MODULES)
             newEnd = rn.randint(EXCIT_NEURONS_PER_MODULE)
 
