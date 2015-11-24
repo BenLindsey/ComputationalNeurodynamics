@@ -24,7 +24,7 @@ class ModNetwork:
     self.net = self._build_net(p)
 
   def update_with_poisson(self, l, t):
-    self.net.layer[0].I = np.zeros(INHIB_NEURONS)    
+    self.net.layer[0].I = rn.poisson(l, INHIB_NEURONS) * EXTRA_I 
 
     for i in range(1, EXCIT_MODULES + 1):
       self.net.layer[i].I = rn.poisson(l, EXCIT_NEURONS_PER_MODULE) * EXTRA_I 
@@ -87,9 +87,11 @@ class ModNetwork:
 
           net.layer[layer].S[layer][end][start] = 0
 
-          # todo Must go to another layer? Can go to inhib layer?
-          toLayer = rn.randint(net.Nlayers)
-          newEnd = rn.randint(net.layer[toLayer].N)
+          toLayer = 1 + rn.randint(EXCIT_MODULES)
+          newEnd = rn.randint(EXCIT_NEURONS_PER_MODULE)
+          while net.layer[toLayer].S[layer][newEnd][start] == 1:
+            toLayer = 1 + rn.randint(EXCIT_MODULES)
+            newEnd = rn.randint(EXCIT_NEURONS_PER_MODULE)
 
           net.layer[toLayer].S[layer][newEnd][start] = 1
     return net

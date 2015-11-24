@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import os
 import multiprocessing as mp
 
-N_TRIALS = 48
+N_TRIALS = 20
 
 IGNORE_MS = 1000 # Ignore the first milliseconds of each simulation.
 SIM_TIME_MS = 60 * 1000
