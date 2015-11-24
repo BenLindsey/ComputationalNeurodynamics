@@ -37,12 +37,12 @@ def main():
 
     calc.setObservations(np.transpose(time_series))
 
-    result = calc.computeAverageLocalOfObservations()
+    result = calc.computeAverageLocalOfObservations() / np.log2(np.e)
 
     ys.append(result)
 
   plt.scatter(p_values, ys)
-  plt.ylabel('Integration')
+  plt.ylabel('Integration (bits)')
   plt.xlabel('Rewiring probability p')
   plt.xlim([0, 1])
   plt.savefig('plots/multiinformation.eps', format='eps')
