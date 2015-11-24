@@ -7,6 +7,7 @@ import numpy.random as rn
 import matplotlib.pyplot as plt
 
 import sys
+import multiprocessing as mp
 
 N_TRIALS = 20
 
@@ -21,34 +22,20 @@ def main():
   calcClass = JPackage('infodynamics.measures.continuous.kraskov').MultiInfoCalculatorKraskov2
   calc = calcClass()
 
-  ps = []
+  # Get the time series
+  p_values = [rn.rand() for i in range(N_TRIALS)]
+  pool = mp.Pool(8)
+  all_time_series = pool.map(get_time_series_from_p, p_values)
+
+  # Save to files
+  for t in range(len(all_time_series)):
+    np.savetxt(SERIES_FILE + str(t) + ".txt", all_time_series[t])
+    np.savetxt(P_FILE + str(t) + ".txt", [p_values[t]])
+
   ys = []
-
-  time_series = []
-
   for i in range(N_TRIALS):
-    p = rn.rand()
-
-    print
-    print 'Trial', (i + 1), ', p =', p, ':'
-
-    mn = ModNetwork(p)
-
-    # Simulate
-    run_net(mn)
-
-    time_series = get_time_series(mn.net)
-
-    # Ensure that there is a time series for each module and all time series
-    # have the same length.
-    assert len(time_series) == EXCIT_MODULES, 'incorrect number of time series'
-    assert all(len(time_series[t]) == len(time_series[1]) for t in range(len(time_series))), \
-      'time series have different lengths'
-
-    print 'Got', len(time_series), 'time series of length', len(time_series[1])
-
-    np.savetxt(SERIES_FILE + str(i) + ".txt", time_series)
-    np.savetxt(P_FILE + str(i) + ".txt", [p])
+    p = p_values[i]
+    time_series = all_time_series[i]
 
     calc.setProperty('PROP_NORMALISE', 'true')
     calc.setProperty('K', '4')
@@ -59,23 +46,27 @@ def main():
 
     result = calc.computeAverageLocalOfObservations()
 
-    ps.append(p)
     ys.append(result)
 
-  plt.scatter(ps, ys)
+  plt.scatter(p_values, ys)
   plt.savefig('plots/multiinformation.eps', format='eps')
+  plt.show()
 
   shutdownJVM()
 
+def get_time_series_from_p(p):
+  mn = ModNetwork(p)
+  run_net(mn)
+
+  print 'Finished a simulation.'
+  return get_time_series(mn.net)
+
 def run_net(mn):
   for t in xrange(SIM_TIME_MS):  
-     sys.stdout.write('Simulating %s ms / %s ms\r' % (t, SIM_TIME_MS - 1))
-     sys.stdout.flush()
-   
      mn.update_with_poisson(0.01, t)
-  
-  # Empty line to prevent overwriting the last simulation line.
-  print
+
+     if t % 1000 == 0:
+       print 'Simulation at time', t
 
 def get_time_series(net):
   time_series = []
@@ -86,12 +77,18 @@ def get_time_series(net):
     sums = get_cumulative_firings(net.layer[layer].firings)
 
     layer_time_series = []
-    for i in np.arange(100, SIM_TIME_MS, 20):
+    for i in np.arange(1000, SIM_TIME_MS, 20):
       total_fired_in_range = sums[i] - sums[i - 50 - 1]
       mean = total_fired_in_range / 50.0
 
       layer_time_series.append(mean)
     time_series.append(layer_time_series)
+
+  # Ensure that there is a time series for each module and all time series
+  # have the same length.
+  assert len(time_series) == EXCIT_MODULES, 'incorrect number of time series'
+  assert all(len(time_series[t]) == len(time_series[1]) for t in range(len(time_series))), \
+    'time series have different lengths'
 
   return time_series
 
