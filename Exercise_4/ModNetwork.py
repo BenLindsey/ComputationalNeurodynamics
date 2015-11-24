@@ -142,7 +142,7 @@ class ModNetwork:
     for i in range(connections):
       start = rn.randint(size)
       end = rn.randint(size)
-      while connection_matrix[end][start] == 1:
+      while connection_matrix[end][start] == 1 or start == end:
         start = rn.randint(size)
         end = rn.randint(size)
 
