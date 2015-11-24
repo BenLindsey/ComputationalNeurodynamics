@@ -33,10 +33,9 @@ def main():
 
     calc.setProperty('PROP_NORMALISE', 'true')
     calc.setProperty('K', '4')
-    calc.initialise(len(time_series[1]))
+    calc.initialise(8)
 
-    java_time_series = time_series#JArray(JDouble, 2)(time_series)
-    calc.setObservations(java_time_series)
+    calc.setObservations(np.transpose(time_series))
 
     result = calc.computeAverageLocalOfObservations()
 
