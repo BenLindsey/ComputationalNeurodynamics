@@ -12,8 +12,8 @@ N_TRIALS = 20
 
 SIM_TIME_MS = 60 * 1000
 
-OUTPUT_FILE = 'result.txt'
 SERIES_FILE = 'series_'
+P_FILE = 'p_'
 
 def main():
   startJVM(getDefaultJVMPath(), '-Djava.class.path=../infodynamics.jar')
@@ -23,9 +23,6 @@ def main():
 
   ps = []
   ys = []
-
-  # Clear the output file.
-  open(OUTPUT_FILE, "w").close()
 
   time_series = []
 
@@ -45,31 +42,22 @@ def main():
     # Ensure that there is a time series for each module and all time series
     # have the same length.
     assert len(time_series) == EXCIT_MODULES, 'incorrect number of time series'
-    assert all(len(time_series[t]) == len(time_series[1]) for t in time_series), \
+    assert all(len(time_series[t]) == len(time_series[1]) for t in range(len(time_series))), \
       'time series have different lengths'
 
     print 'Got', len(time_series), 'time series of length', len(time_series[1])
+
+    np.savetxt(SERIES_FILE + str(i) + ".txt", time_series)
+    np.savetxt(P_FILE + str(i) + ".txt", [p])
 
     calc.setProperty('PROP_NORMALISE', 'true')
     calc.setProperty('K', '4')
     calc.initialise(len(time_series[1]))
 
-    time_series_2d = []
-    for t in time_series:
-      time_series_2d.append(time_series[t])
-
-    np.savetxt(SERIES_FILE + str(i) + ".txt", time_series_2d)
-
-    java_time_series = JArray(JDouble, 2)(time_series_2d)
+    java_time_series = JArray(JDouble, 2)(time_series)
     calc.setObservations(java_time_series)
 
     result = calc.computeAverageLocalOfObservations()
-
-    # Save the result in a file.
-    output_file = open(OUTPUT_FILE, "a")
-    output_file.write('%f, %f' % (p, result))
-    output_file.write('\n')
-    output_file.close()
 
     ps.append(p)
     ys.append(result)
@@ -90,19 +78,20 @@ def run_net(mn):
   print
 
 def get_time_series(net):
-  time_series = {}
+  time_series = []
 
   for layer in range(1, EXCIT_MODULES + 1):
 
     # Get total number of neurons which fired at each time point.
     sums = get_cumulative_firings(net.layer[layer].firings)
 
-    time_series[layer] = []
+    layer_time_series = []
     for i in np.arange(100, SIM_TIME_MS, 20):
       total_fired_in_range = sums[i] - sums[i - 50 - 1]
       mean = total_fired_in_range / 50.0
 
-      time_series[layer].append(mean)
+      layer_time_series.append(mean)
+    time_series.append(layer_time_series)
 
   return time_series
 
