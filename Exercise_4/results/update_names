@@ -1,0 +1,41 @@
+#!/bin/bash
+
+NEWFILE=$1
+
+seriesPrefix="series_"
+pPrefix="p_"
+
+for file in `ls|sort -g -r`
+do
+  filename=$(basename "$file")
+  extension=${filename##*.}
+  filename=${filename%.*}
+
+  n=-1
+
+  if [[ $filename == $seriesPrefix* ]]
+  then
+    n=${filename#$seriesPrefix}
+    prefix=$seriesPrefix
+  fi
+
+  if [[ $filename == $pPrefix* ]]
+  then
+    n=${filename#$pPrefix}
+    prefix=$pPrefix
+  fi
+
+  if [[ n -ne -1 ]]
+  then
+    newN=$(($n+20))
+    newFilename=$prefix$newN.$extension
+    echo "${file} -> ${newFilename}"
+
+    mv "$file" "$newFilename"
+  fi
+#  if [ $filename -ge $NEWFILE ]
+#  then
+#    mv "$file" "$(($filename + 1))".$extension
+#  fi
+done
+
