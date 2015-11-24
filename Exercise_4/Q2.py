@@ -42,6 +42,9 @@ def main():
     ys.append(result)
 
   plt.scatter(p_values, ys)
+  plt.ylabel('Integration')
+  plt.xlabel('Rewiring probability p')
+  plt.xlim([0, 1])
   plt.savefig('plots/multiinformation.eps', format='eps')
   plt.show()
 
