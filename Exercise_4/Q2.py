@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 
 import sys
 
-N_TRIALS = 20
+N_TRIALS = 2
 
-SIM_TIME_MS = 60 * 1000
+SIM_TIME_MS = 1 * 1000
 
 OUTPUT_FILE = 'result.txt'
 
@@ -25,6 +25,8 @@ def main():
 
   # Clear the output file.
   open(OUTPUT_FILE, "w").close()
+
+  time_series = []
 
   for i in range(N_TRIALS):
     p = rn.rand()
@@ -48,13 +50,16 @@ def main():
     print 'Got', len(time_series), 'time series of length', len(time_series[1])
 
     calc.setProperty('PROP_NORMALISE', 'true')
+    calc.setProperty('K', '4')
     calc.initialise(len(time_series[1]))
 
-    calc.startAddObservations()
+    time_series_2d = []
     for t in time_series:
-      java_series = JArray(JDouble, 1)(time_series[t])
-      calc.addObservation(java_series)
-    calc.finaliseAddObservations()
+      time_series_2d.append(time_series[t])
+
+    print time_series_2d
+    java_time_series = JArray(JDouble, 2)(time_series_2d)
+    calc.setObservations(java_time_series)
 
     result = calc.computeAverageLocalOfObservations()
 
