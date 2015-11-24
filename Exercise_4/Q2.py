@@ -6,31 +6,25 @@ import numpy as np
 import numpy.random as rn
 import matplotlib.pyplot as plt
 
-import sys
+import os
 import multiprocessing as mp
 
 N_TRIALS = 20
 
+IGNORE_MS = 1000 # Ignore the first milliseconds of each simulation.
 SIM_TIME_MS = 60 * 1000
 
-SERIES_FILE = 'series_'
-P_FILE = 'p_'
+OUTPUT_DIR = 'results/'
+SERIES_FILE = OUTPUT_DIR + 'series_'
+P_FILE = OUTPUT_DIR + 'p_'
 
 def main():
+  (p_values, all_time_series) = get_data()
+
   startJVM(getDefaultJVMPath(), '-Djava.class.path=../infodynamics.jar')
 
   calcClass = JPackage('infodynamics.measures.continuous.kraskov').MultiInfoCalculatorKraskov2
   calc = calcClass()
-
-  # Get the time series
-  p_values = [rn.rand() for i in range(N_TRIALS)]
-  pool = mp.Pool(8)
-  all_time_series = pool.map(get_time_series_from_p, p_values)
-
-  # Save to files
-  for t in range(len(all_time_series)):
-    np.savetxt(SERIES_FILE + str(t) + ".txt", all_time_series[t])
-    np.savetxt(P_FILE + str(t) + ".txt", [p_values[t]])
 
   ys = []
   for i in range(N_TRIALS):
@@ -41,7 +35,7 @@ def main():
     calc.setProperty('K', '4')
     calc.initialise(len(time_series[1]))
 
-    java_time_series = JArray(JDouble, 2)(time_series)
+    java_time_series = time_series#JArray(JDouble, 2)(time_series)
     calc.setObservations(java_time_series)
 
     result = calc.computeAverageLocalOfObservations()
@@ -54,6 +48,41 @@ def main():
 
   shutdownJVM()
 
+def get_data():
+  if all_result_files_exist():
+    print 'Using saved time series.'
+
+    p_files = [P_FILE + str(i) + '.txt' for i in range(N_TRIALS)]
+    series_files = [SERIES_FILE + str(i) + '.txt' for i in range(N_TRIALS)]
+
+    p_values = [np.loadtxt(f) for f in p_files]
+    all_time_series = [np.loadtxt(f) for f in series_files]
+
+  else:
+    print 'Calculating time series.'
+
+    # Get the time series
+    p_values = [rn.rand() for i in range(N_TRIALS)]
+    pool = mp.Pool(8)
+    all_time_series = pool.map(get_time_series_from_p, p_values)
+
+    # Ensure that the directory for the results exists.
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
+    # Save to files
+    for t in range(len(all_time_series)):
+      np.savetxt(SERIES_FILE + str(t) + ".txt", all_time_series[t])
+      np.savetxt(P_FILE + str(t) + ".txt", [p_values[t]])
+
+  return (p_values, all_time_series)
+
+def all_result_files_exist():
+  p_files = [P_FILE + str(i) + '.txt' for i in range(N_TRIALS)]
+  series_files = [SERIES_FILE + str(i) + '.txt' for i in range(N_TRIALS)]
+
+  return all(os.path.isfile(f) for f in p_files + series_files)
+
 def get_time_series_from_p(p):
   mn = ModNetwork(p)
   run_net(mn)
@@ -65,7 +94,7 @@ def run_net(mn):
   for t in xrange(SIM_TIME_MS):  
      mn.update_with_poisson(0.01, t)
 
-     if t % 1000 == 0:
+     if t % 20000 == 0:
        print 'Simulation at time', t
 
 def get_time_series(net):
@@ -77,7 +106,7 @@ def get_time_series(net):
     sums = get_cumulative_firings(net.layer[layer].firings)
 
     layer_time_series = []
-    for i in np.arange(1000, SIM_TIME_MS, 20):
+    for i in np.arange(IGNORE_MS, SIM_TIME_MS, 20):
       total_fired_in_range = sums[i] - sums[i - 50 - 1]
       mean = total_fired_in_range / 50.0
 
