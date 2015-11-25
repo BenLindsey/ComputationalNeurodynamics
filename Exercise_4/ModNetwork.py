@@ -165,7 +165,7 @@ class ModNetwork:
     connection_matrix = np.zeros([size, size])
     connection_set = []
 
-    for i in range(connections):
+    for _ in range(connections):
       start = rn.randint(size)
       end = rn.randint(size)
       while connection_matrix[end][start] == 1 or start == end:
