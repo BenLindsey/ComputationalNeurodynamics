@@ -2,23 +2,14 @@ from ModNetwork import *
 
 import matplotlib.pyplot as plt
 
-# TODO: Check that these dependencies are allowed.
-import sys
-import os
-
 T  = 1000  # Simulation time
 PLOT_OUTPUT_DIR = 'plots/'
 
 def main():
-  # Ensure that the directory for the plots exists.
-  if not os.path.exists(PLOT_OUTPUT_DIR):
-      os.makedirs(PLOT_OUTPUT_DIR)
-
   p_values = [0, 0.1, 0.2, 0.3, 0.4, 0.5]
 
   for p in p_values:
-    print
-    print 'Network with p = %s:' % p
+    print 'Simulating network with p =', p
 
     mn = ModNetwork(p)
     
@@ -44,13 +35,7 @@ def main():
 
 def run_net(mn):
   for t in xrange(T):  
-     sys.stdout.write('Simulating %s ms / %s ms\r' % (t, T - 1))
-     sys.stdout.flush()
-   
      mn.update_with_poisson(0.01, t)
-  
-  # Empty line to prevent overwriting the last simulation line.
-  print
 
 def get_connection_matrix(net):
   all_connections = []

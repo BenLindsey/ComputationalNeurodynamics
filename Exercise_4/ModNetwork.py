@@ -70,7 +70,6 @@ class ModNetwork:
     for i in range(EXCIT_MODULES):
       (connections, connection_set) = self._create_random_connections(EXCIT_NEURONS_PER_MODULE, CONNECTIONS_PER_MODULE)
       
-      # todo pythonically
       for j in range(EXCIT_MODULES):
       	net.layer[i + 1].S[j + 1] = connections if j == i else np.zeros([EXCIT_NEURONS_PER_MODULE, EXCIT_NEURONS_PER_MODULE])
 

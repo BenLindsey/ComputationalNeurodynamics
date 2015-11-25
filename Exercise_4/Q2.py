@@ -7,9 +7,9 @@ import numpy.random as rn
 import matplotlib.pyplot as plt
 
 import os
-import multiprocessing as mp
+#import multiprocessing as mp
 
-N_TRIALS = 20
+N_TRIALS = 48
 
 IGNORE_MS = 1000 # Ignore the first milliseconds of each simulation.
 SIM_TIME_MS = 60 * 1000
@@ -65,8 +65,8 @@ def get_data():
 
     # Get the time series
     p_values = [rn.rand() for i in range(N_TRIALS)]
-    pool = mp.Pool(8)
-    all_time_series = pool.map(get_time_series_from_p, p_values)
+  #  pool = mp.Pool(8)
+    all_time_series = map(get_time_series_from_p, p_values)
 
     # Ensure that the directory for the results exists.
     if not os.path.exists(OUTPUT_DIR):
@@ -103,17 +103,17 @@ def get_time_series(net):
   time_series = []
 
   for layer in range(1, EXCIT_MODULES + 1):
+    firings = net.layer[layer].firings[IGNORE_MS:]
+    firing_times = [f[0] for f in firings]
 
-    # Get total number of neurons which fired at each time point.
-    sums = get_cumulative_firings(net.layer[layer].firings)
+    firings_per_t = [0] * SIM_TIME_MS
+    for t in firing_times:
+      firings_per_t[t] += 1
 
-    layer_time_series = []
-    for i in np.arange(IGNORE_MS, SIM_TIME_MS, 20):
-      total_fired_in_range = sums[i] - sums[i - 50 - 1]
-      mean = total_fired_in_range / 50.0
+    sums = np.cumsum(np.insert(firings_per_t, 0, 0))
+    means = (sums[50:] - sums[:-50]) / 50.0
 
-      layer_time_series.append(mean)
-    time_series.append(layer_time_series)
+    time_series.append(means[0::20])
 
   # Ensure that there is a time series for each module and all time series
   # have the same length.
@@ -122,22 +122,6 @@ def get_time_series(net):
     'time series have different lengths'
 
   return time_series
-
-def get_cumulative_firings(firings):
-  index = 0
-  sums = []
-
-  for t in range(SIM_TIME_MS):
-    # Find the number of neurons which fired at the current time point.
-    firings_at_t = 0
-    while index < len(firings) and firings[index][0] == t:
-      firings_at_t += 1
-      index += 1
-
-    total = firings_at_t + (0 if t == 0 else sums[t - 1])
-    sums.append(total)
-
-  return sums
 
 if __name__ == "__main__":
   main()
