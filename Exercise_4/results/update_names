@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 NEWFILE=$1
@@ -27,15 +28,11 @@ do
 
   if [[ n -ne -1 ]]
   then
-    newN=$(($n+20))
+    newN=$(($n+24))
     newFilename=$prefix$newN.$extension
     echo "${file} -> ${newFilename}"
 
     mv "$file" "$newFilename"
   fi
-#  if [ $filename -ge $NEWFILE ]
-#  then
-#    mv "$file" "$(($filename + 1))".$extension
-#  fi
 done
 
