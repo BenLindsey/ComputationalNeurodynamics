@@ -37,7 +37,7 @@ def main():
 
     calc.setObservations(np.transpose(time_series))
 
-    result = calc.computeAverageLocalOfObservations() / np.log2(np.e)
+    result = calc.computeAverageLocalOfObservations() * np.log2(np.e)
 
     ys.append(result)
 
