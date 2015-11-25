@@ -51,19 +51,19 @@ class ModNetwork:
 
     # Connect inhib -> everything
     for i in range(len(neurons_per_layer)):
-      toSize = INHIB_NEURONS if i == 0 else EXCIT_NEURONS_PER_MODULE
+      toSize = neurons_per_layer[i]
       net.layer[i].S[0] = rn.uniform(-1, 0, size=(toSize, INHIB_NEURONS))
+
+    # Remove inhib self connections.
+    for i in range(INHIB_NEURONS):
+      net.layer[0].S[0][i][i] = 0
 
     # Initialise all excit -> inhib connections to 0
     for excitLayer in range(1, EXCIT_MODULES + 1):
       net.layer[0].S[excitLayer] = np.zeros([INHIB_NEURONS, EXCIT_NEURONS_PER_MODULE])
 
     # Connect 4 random excit -> inhib
-    for toInhibNeuron in range(INHIB_NEURONS):
-      fromLayer = rn.randint(1, EXCIT_MODULES + 1) 
-      fromNeurons = rn.choice(EXCIT_NEURONS_PER_MODULE, INHIB_INPUTS, replace=0)
-      for fromNeuron in fromNeurons:
-         net.layer[0].S[fromLayer][toInhibNeuron][fromNeuron] = rn.uniform(0, 1)
+    self._connect_excit_to_inhib(net)
 
     # Connect excit -> excit in modules
     rewire_set = {}
@@ -76,8 +76,32 @@ class ModNetwork:
 
       rewire_set[i + 1] = connection_set
 
-    # Rewure excit -> excit
-    return self._rewire_net(net, p, rewire_set)
+    # Rewire excit -> excit
+    self._rewire_net(net, p, rewire_set)
+
+    return net
+
+  def _connect_excit_to_inhib(self, net):
+    # Create a random array which contains 25 indexes to each excit module.
+    excit_modules = np.arange(1, EXCIT_MODULES + 1)
+    duplicates = EXCIT_NEURONS_PER_MODULE / INHIB_INPUTS
+    layer_indexes = [excit_modules[i / duplicates] for i in range(EXCIT_MODULES * duplicates)]
+    rn.shuffle(layer_indexes)
+
+    # Create an array of unique indexes to each neuron for each excit module.
+    module_indexes = [rn.choice(EXCIT_NEURONS_PER_MODULE, \
+      EXCIT_NEURONS_PER_MODULE, replace=0).tolist() for i in range(EXCIT_MODULES)]
+
+    # Use layer_indexes to decide which excit layer the inhib neuron should
+    # connect to, then use module_indexes to find four excit neurons which
+    # haven't been connected to an inhib neuron yet.
+    for inhibNeuron in range(INHIB_NEURONS):
+      layer = layer_indexes.pop()
+      for _ in range(INHIB_INPUTS):
+        excitNeuron = module_indexes[layer - 1].pop()
+
+        assert net.layer[0].S[layer][inhibNeuron][excitNeuron] == 0
+        net.layer[0].S[layer][inhibNeuron][excitNeuron] = rn.rand()
 
   def _rewire_net(self, net, p, rewire_set):
     for layer in rewire_set:
@@ -95,7 +119,6 @@ class ModNetwork:
             newEnd = rn.randint(EXCIT_NEURONS_PER_MODULE)
 
           net.layer[toLayer].S[layer][newEnd][start] = 1
-    return net
 
   def _to_inhibitory_layer(self, layer):
     n = layer.N
